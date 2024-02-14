@@ -5,10 +5,10 @@
   "homepage": "https://wooseok123.github.io/pinecone",
   "scripts": {
     "dev": "next dev",
+    "predeploy": "next build",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "deploy": "next build && touch out/.nojekyll && git add -f out/ && git commit -m 'deploy to gh-pages' && git subtree push --prefix out origin gh-pages"
+    "lint": "next lint"
   },
   "dependencies": {
     "next": "14.1.0",

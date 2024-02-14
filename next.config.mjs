@@ -2,8 +2,8 @@
 
 const nextConfig = {
   reactStrictMode: false,
-  assetPrefix: process.env.NODE_ENV === "production" ? "/pinecone" : "",
   output: "export",
+  basePath: "/pinecone",
 };
 
 export default nextConfig;
