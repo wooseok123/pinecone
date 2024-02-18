@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+import "./global.scss";
+import { Suspense } from "react";
+import Loading from "./loading";
+import { MusicPlayer } from "@_components/molecules";
+import { envConfig } from "@_utils/config";
+import Framer from "./Framer";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,7 +19,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body>
+        <Framer>{children}</Framer>
+        <MusicPlayer src={`${envConfig.assetPath}/home_bgm.mp3`} />
+      </body>
     </html>
   );
 }

@@ -1,95 +1,149 @@
 import Image from "next/image";
-import styles from "./page.module.css";
-import { prefix } from "@/@utils/config";
+import styles from "./page.module.scss";
+import { envConfig } from "@_utils/config";
+import { supabase } from "@_libs/supabase";
+import { MusicPlayer } from "@_components/molecules";
+import { Flex, Space, Text } from "@_components/atoms";
+import Link from "next/link";
+import Loading from "./loading";
 
-export default function Home() {
+export default async function Home() {
+  const data = await supabase.from("hi").select();
+
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src={`${prefix}/vercel.svg`}
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
+      <div
+        style={{
+          position: "relative",
+          width: "700px",
+          height: "500px",
+          minWidth: "380px",
+        }}
+      >
         <Image
-          className={styles.logo}
-          src={`${prefix}/next.svg`}
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+          src={`${envConfig.assetPath}/home_bg.webp`}
+          alt="Vercel Logo"
+          style={{ objectFit: "contain" }}
+          fill
         />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Image
+          src={`${envConfig.assetPath}/1.webp`}
+          alt="Vercel Logo"
+          width={200}
+          style={{
+            position: "absolute",
+            top: "130px",
+            right: "110px",
+            objectFit: "contain",
+          }}
+          height={300}
+        />
+        <Text
+          as="h1"
+          style={{ position: "absolute", top: "300px", right: "40px" }}
+          lineHeight="130%"
+          font="ChosunGs"
+          writingMode={"vertical-rl"}
+          size={25}
         >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+          솔방울의
+          <br />
+          개발 블-로그
+        </Text>
+        <div style={{ position: "absolute", top: "300px", right: "380px" }}>
+          <Flex direction="row" align="start" gap={10}>
+            <div
+              style={{
+                position: "relative",
+                width: "35px",
+                height: "90px",
+                display: "flex",
+                alignItems: "start",
+                justifyContent: "center",
+              }}
+            >
+              <Image
+                src={`${envConfig.assetPath}/idcard.png`}
+                style={{ cursor: "pointer" }}
+                fill
+                alt="id"
+              />
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+              <Link
+                href="/posts"
+                style={{ position: "absolute", padding: "20px 10px" }}
+              >
+                <Text
+                  align={"start"}
+                  writingMode={"vertical-rl"}
+                  cursor="pointer"
+                  size={20}
+                >
+                  글감
+                </Text>
+              </Link>
+            </div>
+            <div
+              style={{
+                position: "relative",
+                width: "35px",
+                height: "90px",
+                display: "flex",
+                alignItems: "start",
+                justifyContent: "center",
+              }}
+            >
+              <Image
+                src={`${envConfig.assetPath}/idcard.png`}
+                style={{ cursor: "pointer" }}
+                fill
+                alt="id"
+              />
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
+              <Link
+                href="/resume"
+                style={{
+                  position: "absolute",
+                  padding: "20px 10px",
+                }}
+              >
+                <Text writingMode={"vertical-rl"} cursor="pointer" size={20}>
+                  이력서
+                </Text>
+              </Link>
+            </div>
+            <div
+              style={{
+                position: "relative",
+                width: "35px",
+                height: "90px",
+                display: "flex",
+                alignItems: "start",
+                justifyContent: "center",
+              }}
+            >
+              <Image
+                src={`${envConfig.assetPath}/idcard.png`}
+                style={{ cursor: "pointer" }}
+                fill
+                alt="id"
+              />
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+              <Link
+                href="/projects"
+                style={{
+                  position: "absolute",
+
+                  padding: "20px 10px",
+                }}
+              >
+                <Text writingMode={"vertical-rl"} cursor="pointer" size={20}>
+                  작품집
+                </Text>
+              </Link>
+            </div>
+          </Flex>
+        </div>
       </div>
     </main>
   );

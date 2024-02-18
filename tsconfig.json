@@ -15,10 +15,24 @@
     "plugins": [
       {
         "name": "next"
+      },
+      {
+        "name": "typescript-plugin-css-modules"
       }
     ],
+    "baseUrl": "./",
     "paths": {
-      "@/*": ["./src/*"]
+      "@_styles/*": ["src/@styles/*"],
+      "@_components/*": ["src/@components/*"],
+      "@_services/*": ["src/@services/*"],
+      "@_utils/*": ["src/@utils/*"],
+      "@_types/*": ["src/@types/*"],
+      "@_game/*": ["src/@game/*"],
+      "@_hooks/*": ["src/@hooks/*"],
+      "@_pages/*": ["src/@pages/*"],
+      "@_state/*": ["src/@state/*"],
+      "@_libs/*": ["src/@libs/*"],
+      "~/*": ["src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
