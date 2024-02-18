@@ -20,6 +20,10 @@ const nextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
+  images: {
+    loader: "custom",
+    loaderFile: "./src/@libs/imageLoader.ts",
+  },
 };
 
 export default nextConfig;
