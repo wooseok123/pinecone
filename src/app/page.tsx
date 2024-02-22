@@ -9,6 +9,7 @@ import Loading from "./loading";
 
 export default async function Home() {
   const data = await supabase.from("hi").select();
+  console.log(data);
 
   return (
     <main className={styles.main}>
