@@ -8,6 +8,7 @@ const __dirname = path.resolve();
 const nextConfig = {
   reactStrictMode: false,
   basePath: isProduction ? "/pinecone" : undefined,
+  distDir: "out",
   assetPrefix: isProduction ? "https://wooseok123.github.io/pinecone" : "",
   sassOptions: {
     includePaths: [path.join(__dirname, "styles")],
