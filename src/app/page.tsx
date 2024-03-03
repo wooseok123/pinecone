@@ -1,15 +1,14 @@
 import Image from "next/image";
 import styles from "./page.module.scss";
 import { envConfig } from "@_utils/config";
-import { supabase } from "@_libs/supabase";
+import { supabase } from "@_libs/database";
 import { MusicPlayer } from "@_components/molecules";
 import { Flex, Space, Text } from "@_components/atoms";
 import Link from "next/link";
 import Loading from "./loading";
 
 export default async function Home() {
-  const data = await supabase.from("hi").select();
-  console.log(data);
+  const { data } = await supabase.from("hi").select();
 
   return (
     <main className={styles.main}>

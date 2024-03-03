@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 
 import "./global.scss";
-import { Suspense } from "react";
-import Loading from "./loading";
+import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import { MusicPlayer } from "@_components/molecules";
 import { envConfig } from "@_utils/config";
 import Framer from "./Framer";
@@ -23,6 +22,8 @@ export default function RootLayout({
         <Framer>{children}</Framer>
         <MusicPlayer src={`${envConfig.assetPath}/home_bgm.mp3`} />
       </body>
+      <GoogleAnalytics gaId={envConfig.GA_ID!} />
+      <GoogleTagManager gtmId={envConfig.GTM_ID!} />
     </html>
   );
 }

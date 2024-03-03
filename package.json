@@ -11,13 +11,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next/third-parties": "^14.1.0",
     "@supabase/supabase-js": "^2.39.6",
     "framer-motion": "^11.0.5",
     "next": "14.1.0",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "slate": "^0.102.0",
+    "slate-react": "^0.102.0"
   },
   "devDependencies": {
+    "@types/gtag.js": "^0.0.19",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -28,5 +32,9 @@
     "sass": "^1.71.0",
     "typescript": "^5",
     "typescript-plugin-css-modules": "^5.1.0"
-  }
+  },
+  "main": "index.js",
+  "repository": "https://github.com/wooseok123/pinecone.git",
+  "author": "wooseok <hosmimam@naver.com>",
+  "license": "MIT"
 }

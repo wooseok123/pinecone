@@ -26,7 +26,7 @@ export const MusicPlayer = ({ src }: Props) => {
     }, 1000);
 
     return () => clearTimeout(delay);
-  }, []);
+  }, [src]);
 
   return (
     <>

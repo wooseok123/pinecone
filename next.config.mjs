@@ -1,13 +1,12 @@
 import path from "path";
 
-const isProduction = process.env.NODE_ENV === "production" ? true : false;
+const isProduction = false;
 
 const __dirname = path.resolve();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
-  output: isProduction ? "export" : "standalone",
   basePath: isProduction ? "/pinecone" : undefined,
   assetPrefix: isProduction ? "https://wooseok123.github.io/pinecone" : "",
   sassOptions: {
