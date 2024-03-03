@@ -1,6 +1,6 @@
 import path from "path";
 
-const isProduction = false;
+const isProduction = process.env.NODE_ENV === "production" ? true : false;
 
 const __dirname = path.resolve();
 
@@ -8,7 +8,6 @@ const __dirname = path.resolve();
 const nextConfig = {
   reactStrictMode: false,
   basePath: isProduction ? "/pinecone" : undefined,
-  distDir: "out",
   assetPrefix: isProduction ? "https://wooseok123.github.io/pinecone" : "",
   sassOptions: {
     includePaths: [path.join(__dirname, "styles")],
@@ -20,10 +19,6 @@ const nextConfig = {
     // your project has type errors.
     // !! WARN !!
     ignoreBuildErrors: true,
-  },
-  images: {
-    loader: "custom",
-    loaderFile: "./src/@libs/imageLoader.ts",
   },
 };
 

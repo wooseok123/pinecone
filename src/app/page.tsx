@@ -21,13 +21,13 @@ export default async function Home() {
         }}
       >
         <Image
-          src={`home_bg.webp`}
+          src={`/home_bg.webp`}
           alt="Vercel Logo"
           style={{ objectFit: "contain" }}
           fill
         />
         <Image
-          src={`1.webp`}
+          src={`/1.webp`}
           alt="Vercel Logo"
           width={200}
           style={{
@@ -63,7 +63,7 @@ export default async function Home() {
               }}
             >
               <Image
-                src={`idcard.png`}
+                src={`/idcard.png`}
                 style={{ cursor: "pointer" }}
                 fill
                 alt="id"
@@ -94,7 +94,7 @@ export default async function Home() {
               }}
             >
               <Image
-                src={`idcard.png`}
+                src={`/idcard.png`}
                 style={{ cursor: "pointer" }}
                 fill
                 alt="id"
@@ -123,7 +123,7 @@ export default async function Home() {
               }}
             >
               <Image
-                src={`idcard.png`}
+                src={`/idcard.png`}
                 style={{ cursor: "pointer" }}
                 fill
                 alt="id"
