@@ -4,9 +4,17 @@ import { supabase } from "@_libs/database";
 import { revalidatePath } from "next/cache";
 // Import the `Editor` and `Transforms` helpers from Slate.
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Editor, Transforms, Element, createEditor, Descendant } from "slate";
+import {
+  Editor,
+  Transforms,
+  Element,
+  createEditor,
+  Descendant,
+  Node,
+} from "slate";
 import { Editable, Slate, withReact } from "slate-react";
 import refreshDataByPath from "../action";
+import { envConfig } from "@_utils/config";
 
 const initialValue: Descendant[] = [
   {
@@ -55,13 +63,24 @@ const CustomEditor = {
     return !!match;
   },
 
+  // 얘도 toggle 해야 함. 예를 들면 h6 다음이 p 태그라던지.. default
   "3"(editor) {
     headingCount > 5 ? (headingCount = 1) : (headingCount += 1);
     Transforms.setNodes(
       editor,
       { type: `h${headingCount}` },
-      { match: (n) => Element.isElement(n) && Editor.isBlock(editor, n) }
+      { match: (n) => Element.isElement(n) }
     );
+  },
+
+  img(editor, src) {
+    const text = { text: "" };
+    const image = { type: "img", src, children: [text] };
+    Transforms.insertNodes(editor, image);
+    Transforms.insertNodes(editor, {
+      type: "paragraph",
+      children: [{ text: "" }],
+    });
   },
 };
 
@@ -73,6 +92,7 @@ const RenderElements = {
   h4: (props) => <H4Element {...props} />,
   h5: (props) => <H5Element {...props} />,
   h6: (props) => <H6Element {...props} />,
+  img: (props) => <ImgElement {...props} />,
   default: (props) => <DefaultElement {...props} />,
 };
 
@@ -81,17 +101,10 @@ export default function Admin() {
 
   const [postData, setPostData] = useState<string>("");
 
-  useEffect(() => {
-    if (postData) {
-      console.log(JSON.parse(postData));
-    }
-  }, [postData]);
-
-  const updateData = async () => {
-    const { error } = await supabase.from("notes").insert({ title: "Denmark" });
-    refreshDataByPath("/posts");
-    console.log(error);
-  };
+  // const updateData = async () => {
+  //   const { error } = await supabase.from("notes").insert({ title: "Denmark" });
+  //   refreshDataByPath("/posts");
+  // };
 
   const renderElement = useCallback((props) => {
     const type = props.element.type;
@@ -103,11 +116,32 @@ export default function Admin() {
     return <Leaf {...props} />;
   }, []);
 
+  const handleFileDrop = async (event) => {
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    let imgSrc;
+    const { data: imgList, error: imgListError } = await supabase.storage
+      .from("pinecone")
+      .list();
+
+    if (imgList?.filter((img) => img.name === file.name).length !== 0) {
+      const { data } = supabase.storage
+        .from("pinecone")
+        .getPublicUrl(`${file.name}`);
+      imgSrc = data.publicUrl;
+    } else {
+      const { data, error } = await supabase.storage
+        .from("pinecone")
+        .upload(`${file.name}`, file);
+      console.log(data, error);
+      imgSrc = `${envConfig.database_url}/storage/v1/object/public/${data.fullPath}`;
+    }
+
+    CustomEditor["img"](editor, imgSrc);
+  };
+
   return (
-    <>
-      <div style={{ cursor: "pointer" }} onClick={updateData}>
-        시1발
-      </div>
+    <div style={{ maxWidth: "768px", margin: "0 auto" }}>
       <Slate
         editor={editor}
         initialValue={initialValue}
@@ -135,6 +169,11 @@ export default function Admin() {
           </button>
         </div>
         <Editable
+          style={{ outline: "none", boxShadow: "0px 0px 10px 0px gray" }}
+          onDragOver={(event) => {
+            console.log(event);
+          }}
+          onDrop={handleFileDrop}
           renderElement={renderElement}
           renderLeaf={renderLeaf}
           onKeyDown={(event) => {
@@ -145,7 +184,7 @@ export default function Admin() {
         />
       </Slate>
       {/* <App /> */}
-    </>
+    </div>
   );
 }
 
@@ -206,6 +245,11 @@ const H5Element = (props) => {
 };
 const H6Element = (props) => {
   return <h6 {...props.attributes}>{props.children}</h6>;
+};
+
+const ImgElement = (props) => {
+  const src = props.element.src;
+  return <img src={src} alt="blog_img" style={{ margin: "0 auto" }} />;
 };
 
 const DefaultElement = (props) => {

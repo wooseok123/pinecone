@@ -25,11 +25,13 @@ export default async function Home() {
           alt="Vercel Logo"
           style={{ objectFit: "contain" }}
           fill
+          priority
         />
         <Image
           src={`/1.webp`}
           alt="Vercel Logo"
           width={200}
+          priority
           style={{
             position: "absolute",
             top: "130px",
