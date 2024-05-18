@@ -1,124 +1,23 @@
 "use client";
 
+import "@toast-ui/editor/dist/toastui-editor.css";
+import { Editor } from "@toast-ui/react-editor";
+import { useEffect, useRef } from "react";
+import "prismjs/themes/prism.css";
+import "@toast-ui/editor-plugin-code-syntax-highlight/dist/toastui-editor-plugin-code-syntax-highlight.css";
+import codeSyntaxHighlight from "@toast-ui/editor-plugin-code-syntax-highlight";
+import Prism from "prismjs";
 import { supabase } from "@_libs/database";
-import { revalidatePath } from "next/cache";
-// Import the `Editor` and `Transforms` helpers from Slate.
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Editor,
-  Transforms,
-  Element,
-  createEditor,
-  Descendant,
-  Node,
-} from "slate";
-import { Editable, Slate, withReact } from "slate-react";
-import refreshDataByPath from "../action";
 import { envConfig } from "@_utils/config";
-
-const initialValue: Descendant[] = [
-  {
-    type: "paragraph",
-    children: [{ text: "A line of text in a paragraph." }],
-  },
-];
-
-let headingCount = 0;
-
-const CustomEditor = {
-  isBoldMarkActive(editor) {
-    const marks = Editor.marks(editor);
-    return marks ? marks.bold === true : false;
-  },
-
-  isCodeBlockActive(editor) {
-    const [match] = Editor.nodes(editor, {
-      match: (n) => n.type === "code",
-    });
-    return !!match;
-  },
-
-  b(editor) {
-    const isActive = CustomEditor.isBoldMarkActive(editor);
-    if (isActive) {
-      Editor.removeMark(editor, "bold");
-    } else {
-      Editor.addMark(editor, "bold", true);
-    }
-  },
-
-  "`"(editor) {
-    const isActive = CustomEditor.isCodeBlockActive(editor);
-    Transforms.setNodes(
-      editor,
-      { type: isActive ? null : "code" },
-      { match: (n) => Element.isElement(n) && Editor.isBlock(editor, n) }
-    );
-  },
-
-  isH1Active(editor) {
-    const [match] = Editor.nodes(editor, {
-      match: (n) => n.type === "h1",
-    });
-    return !!match;
-  },
-
-  // 얘도 toggle 해야 함. 예를 들면 h6 다음이 p 태그라던지.. default
-  "3"(editor) {
-    headingCount > 5 ? (headingCount = 1) : (headingCount += 1);
-    Transforms.setNodes(
-      editor,
-      { type: `h${headingCount}` },
-      { match: (n) => Element.isElement(n) }
-    );
-  },
-
-  img(editor, src) {
-    const text = { text: "" };
-    const image = { type: "img", src, children: [text] };
-    Transforms.insertNodes(editor, image);
-    Transforms.insertNodes(editor, {
-      type: "paragraph",
-      children: [{ text: "" }],
-    });
-  },
-};
-
-const RenderElements = {
-  code: (props) => <CodeElement {...props} />,
-  h1: (props) => <H1Element {...props} />,
-  h2: (props) => <H2Element {...props} />,
-  h3: (props) => <H3Element {...props} />,
-  h4: (props) => <H4Element {...props} />,
-  h5: (props) => <H5Element {...props} />,
-  h6: (props) => <H6Element {...props} />,
-  img: (props) => <ImgElement {...props} />,
-  default: (props) => <DefaultElement {...props} />,
-};
+import { File } from "buffer";
+import { Button } from "@_components/molecules";
+import { Text } from "@_components/atoms";
 
 export default function Admin() {
-  const [editor] = useState(() => withReact(createEditor()));
+  const editorRef = useRef<Editor>(null);
 
-  const [postData, setPostData] = useState<string>("");
-
-  // const updateData = async () => {
-  //   const { error } = await supabase.from("notes").insert({ title: "Denmark" });
-  //   refreshDataByPath("/posts");
-  // };
-
-  const renderElement = useCallback((props) => {
-    const type = props.element.type;
-    const targetType = RenderElements.hasOwnProperty(type) ? type : "default";
-    return RenderElements[targetType](props);
-  }, []);
-
-  const renderLeaf = useCallback((props) => {
-    return <Leaf {...props} />;
-  }, []);
-
-  const handleFileDrop = async (event) => {
-    event.preventDefault();
-    const file = event.dataTransfer.files[0];
+  const onUploadImage = async (blob: File) => {
+    const file = blob;
     let imgSrc;
     const { data: imgList, error: imgListError } = await supabase.storage
       .from("pinecone")
@@ -133,136 +32,46 @@ export default function Admin() {
       const { data, error } = await supabase.storage
         .from("pinecone")
         .upload(`${file.name}`, file);
-      console.log(data, error);
       imgSrc = `${envConfig.database_url}/storage/v1/object/public/${data.fullPath}`;
     }
 
-    CustomEditor["img"](editor, imgSrc);
+    return imgSrc;
   };
 
+  useEffect(() => {
+    if (!editorRef) return;
+    editorRef.current?.getInstance().removeHook("addImageBlobHook");
+    editorRef.current
+      ?.getInstance()
+      .addHook("addImageBlobHook", async (blob: File, callback: any) => {
+        const url = await onUploadImage(blob);
+        callback(url, blob.name);
+        return false;
+      });
+  }, [editorRef]);
+
   return (
-    <div style={{ maxWidth: "768px", margin: "0 auto" }}>
-      <Slate
-        editor={editor}
-        initialValue={initialValue}
-        onChange={(value) => {
-          const content = JSON.stringify(value);
-          setPostData(content);
-        }}
-      >
-        <div>
-          <button
-            onMouseDown={(event) => {
-              event.preventDefault();
-              CustomEditor.toggleBoldMark(editor);
-            }}
-          >
-            Bold
-          </button>
-          <button
-            onMouseDown={(event) => {
-              event.preventDefault();
-              CustomEditor.toggleCodeBlock(editor);
-            }}
-          >
-            Code Block
-          </button>
-        </div>
-        <Editable
-          style={{ outline: "none", boxShadow: "0px 0px 10px 0px gray" }}
-          onDragOver={(event) => {
-            console.log(event);
+    <>
+      <Editor
+        ref={editorRef}
+        initialValue="hello react editor world!"
+        previewStyle="vertical"
+        height="600px"
+        useCommandShortcut={true}
+        plugins={[[codeSyntaxHighlight, { highlighter: Prism }]]}
+      />
+      <Button cursor="pointer" padding="10px 30px" radius={8}>
+        <Text
+          cursor="pointer"
+          onClick={() => {
+            const data = editorRef.current!.getInstance().getHTML();
+            console.log(data);
           }}
-          onDrop={handleFileDrop}
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-          onKeyDown={(event) => {
-            if (!CustomEditor[event.key] || !event.ctrlKey) return;
-            event.preventDefault();
-            CustomEditor[event.key](editor);
-          }}
-        />
-      </Slate>
-      {/* <App /> */}
-    </div>
+          color="white"
+        >
+          제출하기
+        </Text>
+      </Button>
+    </>
   );
 }
-
-// const nodes = [
-//   {
-//     type: "paragraph",
-//     children: [{ text: "A line of text in a paragraph." }],
-//   },
-//   {
-//     type: "paragraph",
-//     children: [{ text: "A line of text in a paragraph." }],
-//   },
-//   {
-//     type: "paragraph",
-//     children: [{ text: "A line of text in a paragraph." }],
-//   },
-// ];
-
-// const SlateEditor = ({ datas }) => {
-//   console.log(datas);
-//   const editor = useMemo(() => withReact(createEditor()), []);
-
-//   return (
-//     <Slate editor={editor} initialValue={datas}>
-//       <Editable readOnly />
-//     </Slate>
-//   );
-// };
-
-// const App = () => {
-//   return <SlateEditor datas={nodes} />;
-// };
-
-const CodeElement = (props) => {
-  return (
-    <pre {...props.attributes}>
-      <code>{props.children}</code>
-    </pre>
-  );
-};
-
-const H1Element = (props) => {
-  return <h1 {...props.attributes}>{props.children}</h1>;
-};
-
-const H2Element = (props) => {
-  return <h2 {...props.attributes}>{props.children}</h2>;
-};
-
-const H3Element = (props) => {
-  return <h3 {...props.attributes}>{props.children}</h3>;
-};
-const H4Element = (props) => {
-  return <h4 {...props.attributes}>{props.children}</h4>;
-};
-const H5Element = (props) => {
-  return <h5 {...props.attributes}>{props.children}</h5>;
-};
-const H6Element = (props) => {
-  return <h6 {...props.attributes}>{props.children}</h6>;
-};
-
-const ImgElement = (props) => {
-  const src = props.element.src;
-  return <img src={src} alt="blog_img" style={{ margin: "0 auto" }} />;
-};
-
-const DefaultElement = (props) => {
-  return <p {...props.attributes}>{props.children}</p>;
-};
-
-const Leaf = (props) => {
-  return (
-    <span
-      {...props.attributes}
-      style={{ fontWeight: props.leaf.bold ? "bold" : "normal" }}
-    >
-      {props.children}
-    </span>
-  );
-};

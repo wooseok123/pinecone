@@ -1,0 +1,18 @@
+code {
+  font-family: ui-monospace;
+  display: inline-block;
+}
+
+pre {
+  min-width: 400px;
+  width: 100%;
+  color: #adbac7;
+  background: #22272e;
+  overflow-y: hidden;
+  overflow-x: scroll;
+  white-space: no-wrap;
+}
+
+code > * {
+  font-family: ui-monospace;
+}

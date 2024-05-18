@@ -11,7 +11,7 @@ export const MusicPlayer = ({ src }: Props) => {
 
   useEffect(() => {
     // 0번째 playlist의 정적경로 삽입.
-    audioRef.current!.src = src;
+    // audioRef.current!.src = src;
 
     const playAudio = async () => {
       try {
