@@ -6,7 +6,7 @@ interface ButtonProps {
   radius?: string | number;
   children?: ReactElement;
   width?: string | number;
-  cursor: string;
+  cursor?: string;
 }
 
 export function Button({
@@ -16,7 +16,7 @@ export function Button({
   cursor = "auto",
   width = "fit-content",
   children,
-}: ButtonProps) {
+}: ButtonProps): ReactElement {
   return (
     <div
       style={{

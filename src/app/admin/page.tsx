@@ -1,74 +1,145 @@
 "use client";
 
-import "@toast-ui/editor/dist/toastui-editor.css";
-import { Editor } from "@toast-ui/react-editor";
-import { useEffect, useRef } from "react";
-import "prismjs/themes/prism.css";
-import "@toast-ui/editor-plugin-code-syntax-highlight/dist/toastui-editor-plugin-code-syntax-highlight.css";
-import codeSyntaxHighlight from "@toast-ui/editor-plugin-code-syntax-highlight";
-import Prism from "prismjs";
-import { supabase } from "@_libs/database";
-import { envConfig } from "@_utils/config";
-import { File } from "buffer";
+import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@_components/molecules";
-import { Text } from "@_components/atoms";
+import { Flex, Text } from "@_components/atoms";
+import { Editor } from "@toast-ui/react-editor";
+import dynamic from "next/dynamic";
+import { supabase } from "@_libs/database";
+
+interface PostMetaDataProps {
+  title: string;
+  keywords: string[];
+  subject: string;
+}
+
+const DynamicEditor = dynamic(() => import("@_components/atoms/Editor"), {
+  ssr: false,
+  loading: () => <div></div>,
+});
+
+const ForwardRefEditor = forwardRef((props, ref) => (
+  <DynamicEditor {...props} editorRef={ref} />
+));
 
 export default function Admin() {
   const editorRef = useRef<Editor>(null);
+  const [postMetaData, setPostMetaData] = useState<PostMetaDataProps>({
+    title: "",
+    keywords: ["하이"],
+    subject: "",
+  });
+  const [eachKeyword, setEachKeyword] = useState("");
+  const [subjectList, setSubjectList] = useState([]);
+  const [subjectData, setSubjectData] = useState("");
+  const insertPostData = async () => {
+    const postData = {
+      ...postMetaData,
+      body_text: editorRef.current!.getInstance().getHTML(),
+      subject: subjectData,
+    };
 
-  const onUploadImage = async (blob: File) => {
-    const file = blob;
-    let imgSrc;
-    const { data: imgList, error: imgListError } = await supabase.storage
-      .from("pinecone")
-      .list();
-
-    if (imgList?.filter((img) => img.name === file.name).length !== 0) {
-      const { data } = supabase.storage
-        .from("pinecone")
-        .getPublicUrl(`${file.name}`);
-      imgSrc = data.publicUrl;
-    } else {
-      const { data, error } = await supabase.storage
-        .from("pinecone")
-        .upload(`${file.name}`, file);
-      imgSrc = `${envConfig.database_url}/storage/v1/object/public/${data.fullPath}`;
+    const keys = Object.keys(postMetaData) as Array<keyof PostMetaDataProps>;
+    for (let key in postMetaData) {
+      if (postMetaData[key].length === 0) {
+        alert("제목이나 키워드를 써주세요");
+        return;
+      }
     }
-
-    return imgSrc;
   };
 
   useEffect(() => {
-    if (!editorRef) return;
-    editorRef.current?.getInstance().removeHook("addImageBlobHook");
-    editorRef.current
-      ?.getInstance()
-      .addHook("addImageBlobHook", async (blob: File, callback: any) => {
-        const url = await onUploadImage(blob);
-        callback(url, blob.name);
-        return false;
-      });
-  }, [editorRef]);
+    const getSubjectList = async () => {
+      const { data } = await supabase.from("posts").select("subject");
+
+      const lists = [...new Set(data?.map((el) => el.subject))];
+      if (lists[0] === null) return;
+      setSubjectList(lists);
+    };
+
+    getSubjectList();
+  }, []);
 
   return (
     <>
-      <Editor
-        ref={editorRef}
-        initialValue="hello react editor world!"
-        previewStyle="vertical"
-        height="600px"
-        useCommandShortcut={true}
-        plugins={[[codeSyntaxHighlight, { highlighter: Prism }]]}
-      />
-      <Button cursor="pointer" padding="10px 30px" radius={8}>
-        <Text
-          cursor="pointer"
-          onClick={() => {
-            const data = editorRef.current!.getInstance().getHTML();
-            console.log(data);
+      <label htmlFor="title">제목</label>
+      <input
+        id="title"
+        defaultValue={postMetaData.title}
+        placeholder="제목을 입력해주세요"
+        onChange={(e) => {
+          setPostMetaData({ ...postMetaData, title: e.target.value });
+        }}
+      ></input>
+      <Flex justify="start" direction="row">
+        <Text>키워드</Text>
+        <div style={{ backgroundColor: "gray", width: "fit-content" }}>
+          <Flex direction="row" justify="start">
+            {postMetaData.keywords.map((el, idx) => (
+              <Button key={idx} radius={8} cursor="pointer" bgColor="lightGray">
+                <Text>{el}</Text>
+                <Text
+                  cursor="pointer"
+                  onClick={() => {
+                    setPostMetaData({
+                      ...postMetaData,
+                      keywords: postMetaData.keywords.filter(
+                        (keyword) => keyword !== el
+                      ),
+                    });
+                  }}
+                >
+                  &nbsp;X
+                </Text>
+              </Button>
+            ))}
+
+            <Button>
+              <Text
+                color="white"
+                cursor="pointer"
+                onClick={() => {
+                  if (eachKeyword.length === 0) return;
+                  setPostMetaData({
+                    ...postMetaData,
+                    keywords: [...postMetaData.keywords, eachKeyword],
+                  });
+                  setEachKeyword("");
+                }}
+              >
+                추가하기
+              </Text>
+            </Button>
+            <input
+              type="text"
+              value={eachKeyword}
+              onChange={(e) => {
+                setEachKeyword(e.target.value);
+              }}
+            />
+          </Flex>
+        </div>
+      </Flex>
+      <Flex justify="start" direction="row">
+        <Text>주제</Text>
+        <input
+          type="text"
+          value={subjectData}
+          onChange={(e) => {
+            setSubjectData(e.target.value);
           }}
-          color="white"
-        >
+        ></input>
+        <select>
+          {subjectList?.map((el) => (
+            <option key={el} value={el}>
+              {el}
+            </option>
+          ))}
+        </select>
+      </Flex>
+      <ForwardRefEditor ref={editorRef} />
+      <Button cursor="pointer" padding="10px 30px" radius={8}>
+        <Text cursor="pointer" color="white" onClick={() => insertPostData()}>
           제출하기
         </Text>
       </Button>
