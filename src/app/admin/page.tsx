@@ -22,6 +22,8 @@ const ForwardRefEditor = forwardRef((props, ref) => (
   <DynamicEditor {...props} editorRef={ref} />
 ));
 
+ForwardRefEditor.displayName = "ForwardRefEditor";
+
 export default function Admin() {
   const editorRef = useRef<Editor>(null);
   const [postMetaData, setPostMetaData] = useState<PostMetaDataProps>({
