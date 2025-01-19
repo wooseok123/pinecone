@@ -17,7 +17,7 @@ hljs.registerLanguage("typescript", typescript);
 const initialValue: Element[] = [
   {
     type: "paragraph",
-    children: [{ text: "아니 왜 씨발" }],
+    children: [{ text: "" }],
   },
 ];
 
